@@ -5,6 +5,7 @@ import { createdPost } from "../controllers/postController.js";
 import { deletePost } from "../controllers/postController.js";
 import { getPostById } from "../controllers/postController.js";
 import { createComment } from "../controllers/postController.js";
+import { likePost } from "../controllers/postController.js";
 
 const router = express.Router();
 

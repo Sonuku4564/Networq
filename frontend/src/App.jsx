@@ -4,6 +4,7 @@ import Layout from "./components/Layout/Layout"
 import HomePage from "./pages/HomePage"
 import SignupPage from "./pages/auth/SignupPage"
 import LoginPage from "./pages/auth/LoginPage"
+import { Toaster } from "react-hot-toast"
 
 function App() {
  
@@ -14,6 +15,7 @@ function App() {
           <Route path="/signup" element= {<SignupPage/>} />
           <Route path="/login" element= {<LoginPage/>} />
          </Routes>
+         <Toaster/>
       </Layout>
    
   )

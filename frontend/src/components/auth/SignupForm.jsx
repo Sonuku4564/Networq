@@ -1,15 +1,31 @@
 import { useState } from "react";
+import {useMutation} from "@tanstack/react-query"
+import {axiosInstance} from "../../lib/axios.js"
+import {toast} from "react-hot-toast"
+import {Loader} from "lucide-react"
 
 const SignupForm = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // Define `isLoading` to prevent errors.
+  
+  const {mutate: signupMutation, isLoading} = useMutation({
+    mutationFn: async(data) =>{
+      const res = await axiosInstance.post("/auth/signup", data)
+      return res.data
+    },
+    onSuccess: () => {
+    toast.success("Account Created Successfully")
+    },
+    onError: (err) => {
+      toast.error(err.response.data.message || "Something went wrong")
+    },
+  })
 
   const handleSignup = (e) => {
     e.preventDefault();
-    console.log({ name, email, username, password });
+    signupMutation({ name, email, username, password });
   
   };
 
@@ -54,7 +70,7 @@ const SignupForm = () => {
         className="btn btn-primary w-full text-white"
       >
         {isLoading ? (
-          <span className="loader size-5 animate-spin" />
+          <Loader className="loader size-5 animate-spin" />
         ) : (
           "Agree & Join"
         )}
