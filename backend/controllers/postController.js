@@ -26,13 +26,13 @@ export const createdPost = async (req, res) =>{
         if(image){
             const imgResult = await cloudinary.uploader.upload(image)
             newPost = new Post ({
-                author: req.user_id,
+                author: req.user._id,
                 content,
                 image: imgResult.secure_url
             })
         } else{
             newPost = new Post ({
-                author: req.user_id, 
+                author: req.user._id, 
                 content, 
             })
         }
@@ -140,22 +140,22 @@ export const createComment = async (req,res) =>{
     }
 }
 
-export const likePost = async (req,res) => {
-    try{
+export const likePost = async (req, res) => {
+    try {
         const postId = req.params.id;
         const post = await Post.findById(postId);
         const userId = req.user_id;
 
-        if(post.likes.includes(userId)) {
+        if (post.likes.includes(userId)) {
             // unlike the post
             post.likes = post.likes.filter(id => id.toString() !== userId.toString());
         }
-        else{
+        else {
             // like the post
             post.likes.push(userId)
 
             // create a notification if the post owner is not the user who liked 
-            if(post.author.toString() !== userId.toString()){
+            if (post.author.toString() !== userId.toString()) {
                 const newNotification = new Notification({
                     recipient: post.author,
                     type: "like",
@@ -168,7 +168,7 @@ export const likePost = async (req,res) => {
         await post.save();
         res.status(200).json(post)
 
-    } catch (error){
+    } catch (error) {
         console.log("Error in likePost ", error.message);
         res.status(500).json({ message: " Internal Server Error", });
     }
