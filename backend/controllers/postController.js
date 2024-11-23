@@ -4,7 +4,7 @@ import Notification from "../models/notificationModel.js";
 
 export const getFeedPosts = async (req, res) =>{
   try{
-    const posts =await Post.find( {author: {$in: req.user.connections}})
+    const posts =await Post.find( {author: {$in: [...req.user.connections, req.user._id]}})
     .populate("author","name username profilePicture headline")
     .populate( "comments.user", "name profilePicture")
     .sort({createdAt : -1});
@@ -144,7 +144,7 @@ export const likePost = async (req, res) => {
     try {
         const postId = req.params.id;
         const post = await Post.findById(postId);
-        const userId = req.user_id;
+        const userId = req.user._id;
 
         if (post.likes.includes(userId)) {
             // unlike the post
