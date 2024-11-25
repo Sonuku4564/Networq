@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import PostAction from "./PostAction";
+import {formatDistanceToNow} from "date-fns"
 
 const Post = ({ post }) => {
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
@@ -20,6 +21,7 @@ const Post = ({ post }) => {
   const [comments, setComments] = useState(post.comments || []);
   const isOwner = authUser._id === post.author._id;
   const isLiked = post.likes.includes(authUser._id);
+ 
 
   const queryClient = useQueryClient();
 
@@ -110,6 +112,9 @@ const Post = ({ post }) => {
               </Link>
               <p className="text-xs text-info"> {post.author.headline} </p>
               {/*todo : add post created at field and format it */}
+              <p className="text-xs text-info">
+                {formatDistanceToNow(new Date(post.createdAt), {addSuffix: true})}
+              </p>
             </div>
           </div>
           {isOwner && (
@@ -173,6 +178,9 @@ const Post = ({ post }) => {
                   <div className="flex items-center mb-1">
                     <span className="font-semibold mr-2">
                       {comment.user.name || "Anonymous User"}
+                    </span>
+                    <span className="text-xs text-info">
+                        {formatDistanceToNow(new Date(post.createdAt), {addSuffix: true})}
                     </span>
                   </div>
                   <p>{comment.content}</p>
