@@ -40,61 +40,60 @@ export const sendConnectionRequest = async (req,res) =>{
     }
 }
 
-export const acceptConnectionRequest = async (req,res) =>{
-    try{
-        const {requestId} = req.params;
-        const userId = req.user._id;
+export const acceptConnectionRequest = async (req, res) => {
+	try {
+		const { requestId } = req.params;
+		const userId = req.user._id;
 
-        const request = await ConnectionRequest.findById(requestId)
-        .populate("sender", "name email username")
-        .populate("receipient", "name username")
+		const request = await ConnectionRequest.findById(requestId)
+			.populate("sender", "name email username")
+			.populate("recipient", "name username");
 
-        if(!request){
-            return res.status(400).json({message: "Connection Request not found"});  
-        }
+		if (!request) {
+			return res.status(404).json({ message: "Connection request not found" });
+		}
 
-        // check  if the request is for the current user
-        if(request.recipient._id.toString() !==  userId.toString()){
-            return res.status(403).json({message: "Not Authorized to accept this request"});  
-        }
+		// check if the req is for the current user
+		if (request.recipient._id.toString() !== userId.toString()) {
+			return res.status(403).json({ message: "Not authorized to accept this request" });
+		}
 
-        if(request.status !== "pending"){
-            return res.status(400).json({message: "This request has already been processed "});  
-        }
+		if (request.status !== "pending") {
+			return res.status(400).json({ message: "This request has already been processed" });
+		}
 
-        request.status = "accepted";
-        await request.save();
+		request.status = "accepted";
+		await request.save();
 
-        // if i am your friend then you are also my frined
-        await User.findByIdAndUpdate(request.sender._id, { $addToSet: {connections: userId}});
-        await User.findByIdAndUpdate(request.sender._id, { $addToSet: {connections: request.sender._id}});
+		// if im your friend then ur also my friend ;)
+		await User.findByIdAndUpdate(request.sender._id, { $addToSet: { connections: userId } });
+		await User.findByIdAndUpdate(userId, { $addToSet: { connections: request.sender._id } });
 
-        const notification = new Notification({
-            recipient: request.sender._id,
-            type: "connectionAccepted",
-            relatedUser : userId,
-        })
+		const notification = new Notification({
+			recipient: request.sender._id,
+			type: "connectionAccepted",
+			relatedUser: userId,
+		});
 
-        notification.save();
+		await notification.save();
 
-        res.json({message: "Connection accepted Successfully"})
+		res.json({ message: "Connection accepted successfully" });
 
-        // todo send notification email
-        const senderEmail =request.sender.email;
-        const senderName = request.sender.name;
-        const receipientName = request.recipient.name;
-        const profileUrl = process.env.CLIENT_URL + "/profile/" + request.recipient.username;
-         
-        try{
-            await sendConnectionAcceptedEmail(senderEmail, senderName, receipientName, profileUrl);
-        }catch(error){
-            console.error("Error in sendConnectionAcceptedEmail:", error);
-        }
-    } catch (error){
-        console.log("Error in   acceptConnectionRequest controller", error.message);
-        res.status(500).json({ message: " Internal Server Error", });
-    }
-}
+		const senderEmail = request.sender.email;
+		const senderName = request.sender.name;
+		const recipientName = request.recipient.name;
+		const profileUrl = process.env.CLIENT_URL + "/profile/" + request.recipient.username;
+
+		try {
+			await sendConnectionAcceptedEmail(senderEmail, senderName, recipientName, profileUrl);
+		} catch (error) {
+			console.error("Error in sendConnectionAcceptedEmail:", error);
+		}
+	} catch (error) {
+		console.error("Error in acceptConnectionRequest controller:", error);
+		res.status(500).json({ message: "Server error" });
+	}
+};
 
 export const rejectConnectionRequest = async (req, res) => {
 	try {
