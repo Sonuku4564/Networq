@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   Loader,
   MessageCircle,
@@ -15,12 +15,14 @@ import PostAction from "./PostAction";
 import {formatDistanceToNow} from "date-fns"
 
 const Post = ({ post }) => {
+  const {postId} = useParams();
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
   const [showComments, setShowComments] = useState(false);
   const [newComments, setNewComments] = useState("");
   const [comments, setComments] = useState(post.comments || []);
   const isOwner = authUser._id === post.author._id;
   const isLiked = post.likes.includes(authUser._id);
+
  
 
   const queryClient = useQueryClient();
@@ -59,6 +61,7 @@ const Post = ({ post }) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["posts", postId] });
     },
   });
 
